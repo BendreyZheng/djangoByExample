@@ -1,20 +1,29 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models import CASCADE
 
 # Create your models here.
-class Post(models.Model):
-  STATUS = (
-        ('O', 'Open'),
-        ('C', 'Closed'),
-    )
-  user = models.OneToOneField(User, on_delete=CASCADE, related_name='jprofile')
-  status = models.CharField('Submission status', choices=STATUS, blank=False, null=True, max_length=10)
-  email = models.EmailField('Email', blank=True, null=True, max_length=200)
-  description = models.TextField('Journal description', blank=True, null=True)
-  submission_criteria = models.TextField('Submission criteria', blank=True, null=True)
-  journal_cover = models.ImageField('Journal Cover Picture',
-                                      storage=GoogleCloudStorage(bucket_name=settings.GCS_USER_BUCKET_NAME),
-                                      upload_to=user_directory_journal_cover, null=True, blank=True)
+class JournalProfile(models.Model):
 
-  def __str__(self):
-      return str(self.user)
+    class Status(models.TextChoices):
+        OPEN = 'O', 'Open'
+        CLOSED = 'C', 'Closed'
+    
+    user = models.OneToOneField(User, on_delete=CASCADE)
+    name = models.CharField('Journal Name', max_length=100)
+    ranking = models.IntegerField(blank=True, null=True)
+    status = models.CharField('Submission status', choices=Status.choices, default=Status.CLOSED, blank=False, null=True, max_length=10)
+    email = models.EmailField('Email', blank=True, null=True, max_length=200)
+    description = models.TextField('Journal description', blank=True, null=True)
+    submission_criteria = models.TextField('Submission criteria', blank=True, null=True)
+    journal_cover = models.ImageField('Journal Cover Picture', null=True, blank=True)
+
+    class Meta:
+        ordering = ['-ranking']
+        indexes = [ # define databse indexes for the model
+        models.Index(fields=['-ranking']),
+        ]
+
+    def __str__(self):
+        return str(self.name)
   
