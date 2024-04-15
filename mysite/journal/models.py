@@ -3,6 +3,12 @@ from django.contrib.auth.models import User
 from django.db.models import CASCADE
 
 # Create your models here.
+class OpenJournalManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset()\
+                    .filter(status=JournalProfile.Status.OPEN)
+
+
 class JournalProfile(models.Model):
 
     class Status(models.TextChoices):
@@ -17,6 +23,9 @@ class JournalProfile(models.Model):
     description = models.TextField('Journal description', blank=True, null=True)
     submission_criteria = models.TextField('Submission criteria', blank=True, null=True)
     journal_cover = models.ImageField('Journal Cover Picture', null=True, blank=True)
+
+    objects = models.Manager
+    open = OpenJournalManager()
 
     class Meta:
         ordering = ['-ranking']
